@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - sqlite_data:/data
+      - static_data:/app/staticfiles
+    environment:
+      - DJANGO_SETTINGS_MODULE=eisenhower_matrix.settings
+      - PYTHONPATH=/app
+    command: /app/entrypoint.sh
+
+volumes:
+  sqlite_data:
+    driver: local
+  static_data:
+    driver: local
