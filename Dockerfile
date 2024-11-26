@@ -18,6 +18,7 @@ RUN apk add --no-cache \
     curl \
     nodejs \
     npm \
+    dos2unix \
     && rm -rf /var/cache/apk/*
 
 # Install Python dependencies
@@ -34,22 +35,9 @@ RUN npm run build
 # Create data directory for SQLite
 RUN mkdir -p /data
 
-# Create entrypoint script
-RUN echo '#!/bin/sh\n\
-python manage.py migrate\n\
-python manage.py setup_groups\n\
-python manage.py create_admin_user\n\
-python manage.py collectstatic --noinput\n\
-gunicorn eisenhower_matrix.wsgi:application \
-    --bind 0.0.0.0:8000 \
-    --workers ${GUNICORN_WORKERS:-3} \
-    --timeout ${GUNICORN_TIMEOUT:-120} \
-    --max-requests ${GUNICORN_MAX_REQUESTS:-1000} \
-    --access-logfile - \
-    --error-logfile - \
-    --reload\n\
-' > /app/entrypoint.sh \
-&& chmod +x /app/entrypoint.sh
+# Fix line endings and set permissions
+RUN dos2unix /app/entrypoint.sh && \
+    chmod +x /app/entrypoint.sh
 
 # Set entrypoint
 ENTRYPOINT ["/app/entrypoint.sh"]
