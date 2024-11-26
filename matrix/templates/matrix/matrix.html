@@ -58,7 +58,7 @@
         </div>
         {% endif %}
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
             <!-- Do First Quadrant -->
             <div class="bg-red-100 p-4 rounded-lg quadrant" data-quadrant="do_first" ondragover="event.preventDefault()" ondrop="handleDrop(event)">
                 <h2 class="text-xl font-bold mb-4 text-red-800">Do First (Urgent & Important)</h2>
@@ -197,6 +197,35 @@
                     </div>
                     {% endfor %}
                 </div>
+            </div>
+        </div>
+
+        <!-- Recently Completed Tasks -->
+        <div class="bg-green-50 p-4 rounded-lg mt-8">
+            <h2 class="text-xl font-bold mb-4 text-green-800">Recently Completed Tasks</h2>
+            <div class="space-y-2">
+                {% for task in recent_completed %}
+                <div class="bg-white p-4 rounded shadow">
+                    <h3 class="font-bold">{{ task.title }}</h3>
+                    <p class="text-gray-600">{{ task.description }}</p>
+                    <div class="mt-2 text-sm">
+                        {% if task.due_date %}
+                        <p class="text-gray-500">
+                            <span class="font-medium">Due:</span> {{ task.due_date|date:"M d, Y H:i" }}
+                        </p>
+                        {% endif %}
+                        <p class="text-gray-500">
+                            <span class="font-medium">Created by:</span> {{ task.created_by.username|default:"Unknown" }}
+                        </p>
+                        <form action="{% url 'task-toggle' task.pk %}" method="post" class="inline mt-2">
+                            {% csrf_token %}
+                            <button type="submit">Mark Incomplete</button>
+                        </form>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-gray-600">No completed tasks yet.</p>
+                {% endfor %}
             </div>
         </div>
     </div>

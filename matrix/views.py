@@ -25,6 +25,7 @@ class MatrixView(LoginRequiredMixin, ListView):
         context['schedule'] = tasks.filter(is_urgent=False, is_important=True, completed=False)
         context['delegate'] = tasks.filter(is_urgent=True, is_important=False, completed=False)
         context['dont_do'] = tasks.filter(is_urgent=False, is_important=False, completed=False)
+        context['recent_completed'] = tasks.filter(completed=True).order_by('-id')[:10]
         return context
 
 class TaskCreate(LoginRequiredMixin, CreateView):
