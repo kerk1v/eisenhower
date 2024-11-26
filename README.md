@@ -21,7 +21,7 @@ The easiest way to run the application is using the pre-built Docker image from 
 ```yaml
 services:
   web:
-    image: ghcr.io/volkerkerkhoff/eisenhower:latest
+    image: ghcr.io/kerk1v/eisenhower:latest
     ports:
       - "8000:8000"
     volumes:
@@ -31,6 +31,7 @@ services:
       - PYTHONPATH=/app
       - GUNICORN_WORKERS=3
       - GUNICORN_TIMEOUT=120
+      - SITE_URL=https://your-domain.com  # Set this to your actual domain
     restart: unless-stopped
 
 volumes:
@@ -50,13 +51,22 @@ Default admin credentials:
 - Username: admin
 - Password: adminpassword
 
+## Environment Variables
+
+The following environment variables can be configured:
+
+- `SITE_URL`: The base URL where the application is hosted (e.g., https://work.spainip.es)
+- `GUNICORN_WORKERS`: Number of Gunicorn worker processes (default: 3)
+- `GUNICORN_TIMEOUT`: Worker timeout in seconds (default: 120)
+- `GUNICORN_MAX_REQUESTS`: Maximum requests per worker (default: 1000)
+
 ## Development Setup
 
 If you want to develop or customize the application:
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/volkerkerkhoff/eisenhower.git
+git clone https://github.com/kerk1v/eisenhower.git
 cd eisenhower
 ```
 
@@ -65,13 +75,13 @@ cd eisenhower
 docker-compose up --build
 ```
 
-## Environment Variables
+## CORS and CSRF Configuration
 
-The following environment variables can be configured:
+The application automatically configures CORS and CSRF settings based on the `SITE_URL` environment variable:
 
-- `GUNICORN_WORKERS`: Number of Gunicorn worker processes (default: 3)
-- `GUNICORN_TIMEOUT`: Worker timeout in seconds (default: 120)
-- `GUNICORN_MAX_REQUESTS`: Maximum requests per worker (default: 1000)
+- Both HTTP and HTTPS variants of the domain are allowed
+- CORS is configured to allow credentials
+- CSRF tokens are properly validated for the domain
 
 ## Building and Publishing
 

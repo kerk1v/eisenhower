@@ -59,8 +59,22 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_ALLOW_ALL = True
 
+# Get site URL from environment variable or use default for development
+SITE_URL = os.getenv('SITE_URL', 'http://localhost:8000')
+
+# Generate CSRF trusted origins from site URL
+def get_csrf_trusted_origins():
+    url = SITE_URL.rstrip('/')
+    if url.startswith('http://'):
+        https_url = 'https://' + url[7:]
+        return [url, https_url]
+    elif url.startswith('https://'):
+        http_url = 'http://' + url[8:]
+        return [url, http_url]
+    return [f'http://{url}', f'https://{url}']
+
 # CSRF settings
-CSRF_TRUSTED_ORIGINS = ['*']
+CSRF_TRUSTED_ORIGINS = get_csrf_trusted_origins()
 CSRF_COOKIE_SECURE = False
 CSRF_COOKIE_HTTPONLY = False
 CSRF_USE_SESSIONS = False
