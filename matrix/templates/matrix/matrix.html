@@ -66,7 +66,7 @@
                     {% for task in do_first %}
                     <div class="bg-white p-4 rounded shadow task-card" draggable="true" data-task-id="{{ task.pk }}" ondragstart="handleDragStart(event)">
                         <h3 class="font-bold">{{ task.title }}</h3>
-                        <p class="text-gray-600">{{ task.description }}</p>
+                        <p class="text-gray-600">{{ task.description|urlize_custom|safe }}</p>
                         <div class="mt-2 text-sm">
                             {% if task.due_date %}
                             <p class="text-gray-500 {% if task.due_date|is_due_soon %}due-soon{% endif %}">
@@ -101,7 +101,7 @@
                     {% for task in schedule %}
                     <div class="bg-white p-4 rounded shadow task-card" draggable="true" data-task-id="{{ task.pk }}" ondragstart="handleDragStart(event)">
                         <h3 class="font-bold">{{ task.title }}</h3>
-                        <p class="text-gray-600">{{ task.description }}</p>
+                        <p class="text-gray-600">{{ task.description|urlize_custom|safe }}</p>
                         <div class="mt-2 text-sm">
                             {% if task.due_date %}
                             <p class="text-gray-500 {% if task.due_date|is_due_soon %}due-soon{% endif %}">
@@ -136,7 +136,7 @@
                     {% for task in delegate %}
                     <div class="bg-white p-4 rounded shadow task-card" draggable="true" data-task-id="{{ task.pk }}" ondragstart="handleDragStart(event)">
                         <h3 class="font-bold">{{ task.title }}</h3>
-                        <p class="text-gray-600">{{ task.description }}</p>
+                        <p class="text-gray-600">{{ task.description|urlize_custom|safe }}</p>
                         <div class="mt-2 text-sm">
                             {% if task.due_date %}
                             <p class="text-gray-500 {% if task.due_date|is_due_soon %}due-soon{% endif %}">
@@ -171,7 +171,7 @@
                     {% for task in dont_do %}
                     <div class="bg-white p-4 rounded shadow task-card" draggable="true" data-task-id="{{ task.pk }}" ondragstart="handleDragStart(event)">
                         <h3 class="font-bold">{{ task.title }}</h3>
-                        <p class="text-gray-600">{{ task.description }}</p>
+                        <p class="text-gray-600">{{ task.description|urlize_custom|safe }}</p>
                         <div class="mt-2 text-sm">
                             {% if task.due_date %}
                             <p class="text-gray-500 {% if task.due_date|is_due_soon %}due-soon{% endif %}">
@@ -207,7 +207,7 @@
                 {% for task in recent_completed %}
                 <div class="bg-white p-4 rounded shadow">
                     <h3 class="font-bold">{{ task.title }}</h3>
-                    <p class="text-gray-600">{{ task.description }}</p>
+                    <p class="text-gray-600">{{ task.description|urlize_custom|safe }}</p>
                     <div class="mt-2 text-sm">
                         {% if task.due_date %}
                         <p class="text-gray-500">
