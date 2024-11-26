@@ -1,5 +1,5 @@
-# Use Python base image
-FROM python:3.11-slim
+# Use Python Alpine base image
+FROM python:3.11-alpine
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
@@ -9,13 +9,16 @@ ENV NODE_MAJOR 20
 # Set work directory
 WORKDIR /app
 
-# Install system dependencies including Node.js
-RUN apt-get update && apt-get install -y \
+# Install system dependencies and Node.js
+RUN apk add --no-cache \
     gcc \
+    musl-dev \
+    python3-dev \
+    libffi-dev \
     curl \
-    && curl -fsSL https://deb.nodesource.com/setup_${NODE_MAJOR}.x | bash - \
-    && apt-get install -y nodejs \
-    && rm -rf /var/lib/apt/lists/*
+    nodejs \
+    npm \
+    && rm -rf /var/cache/apk/*
 
 # Install Python dependencies
 COPY requirements.txt .
