@@ -18,6 +18,53 @@
             color: #ef4444;
             font-weight: bold;
         }
+        .markdown-content {
+            @apply prose prose-sm max-w-none;
+        }
+        .markdown-content h1 { @apply text-lg font-bold mb-2; }
+        .markdown-content h2 { @apply text-base font-bold mb-2; }
+        .markdown-content h3 { @apply text-sm font-bold mb-1; }
+        .markdown-content p { @apply mb-2; }
+        .markdown-content ul { @apply list-disc ml-4 mb-2; }
+        .markdown-content ol { @apply list-decimal ml-4 mb-2; }
+        .markdown-content code { @apply bg-gray-100 px-1 rounded text-sm; }
+        .markdown-content pre { @apply bg-gray-100 p-2 rounded mb-2 text-sm; }
+        .markdown-content blockquote { @apply border-l-4 border-gray-300 pl-2 italic; }
+        .markdown-content a { @apply text-blue-600 hover:text-blue-800 underline; }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+        .modal-content {
+            position: relative;
+            background-color: white;
+            margin: 10vh auto;
+            padding: 1.5rem;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 0.5rem;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .close-modal {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.75rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+        .close-modal:hover {
+            color: #000;
+        }
     </style>
 </head>
 <body class="min-h-screen p-4 bg-gray-100">
@@ -32,18 +79,18 @@
                 <div class="flex-1"></div>
             </div>
             <div class="flex justify-center items-center space-x-4 mt-4">
-                <a href="{% url 'task-create' %}">Add New Task</a>
+                <a href="{% url 'task-create' %}" class="text-blue-600 hover:text-blue-800">Add New Task</a>
                 {% if user.is_authenticated %}
                     {% if user.groups.all.0.name == 'admins' %}
-                        <a href="{% url 'user-list' %}">User Management</a>
+                        <a href="{% url 'user-list' %}" class="text-blue-600 hover:text-blue-800">User Management</a>
                     {% endif %}
-                    <a href="{% url 'password-change' %}">Change Password</a>
+                    <a href="{% url 'password-change' %}" class="text-blue-600 hover:text-blue-800">Change Password</a>
                     <form action="{% url 'logout' %}" method="post" class="inline">
                         {% csrf_token %}
-                        <button type="submit">Logout</button>
+                        <button type="submit" class="text-blue-600 hover:text-blue-800">Logout</button>
                     </form>
                 {% else %}
-                    <a href="{% url 'login' %}">Login</a>
+                    <a href="{% url 'login' %}" class="text-blue-600 hover:text-blue-800">Login</a>
                 {% endif %}
             </div>
         </header>
@@ -66,7 +113,9 @@
                     {% for task in do_first %}
                     <div class="bg-white p-4 rounded shadow task-card" draggable="true" data-task-id="{{ task.pk }}" ondragstart="handleDragStart(event)">
                         <h3 class="font-bold">{{ task.title }}</h3>
-                        <p class="text-gray-600">{{ task.description|urlize_custom|safe }}</p>
+                        <button onclick="showDescription('{{ task.pk }}', '{{ task.title|escapejs }}')" class="text-blue-600 hover:text-blue-800 mt-2">
+                            View Description
+                        </button>
                         <div class="mt-2 text-sm">
                             {% if task.due_date %}
                             <p class="text-gray-500 {% if task.due_date|is_due_soon %}due-soon{% endif %}">
@@ -78,16 +127,21 @@
                             </p>
                         </div>
                         <div class="mt-2 space-x-2">
-                            <a href="{% url 'task-update' task.pk %}">Edit</a>
+                            <a href="{% url 'task-view' task.pk %}" class="text-blue-600 hover:text-blue-800">View</a>
+                            <a href="{% url 'task-update' task.pk %}" class="text-blue-600 hover:text-blue-800">Edit</a>
                             <form action="{% url 'task-delete' task.pk %}" method="get" class="inline">
-                                <button type="submit">Delete</button>
+                                <button type="submit" class="text-red-600 hover:text-red-800">Delete</button>
                             </form>
                             <form action="{% url 'task-toggle' task.pk %}" method="post" class="inline">
                                 {% csrf_token %}
-                                <button type="submit">
+                                <button type="submit" class="text-green-600 hover:text-green-800">
                                     {% if task.completed %}Mark Incomplete{% else %}Mark Complete{% endif %}
                                 </button>
                             </form>
+                        </div>
+                        <!-- Hidden description content for modal -->
+                        <div id="description-{{ task.pk }}" class="hidden">
+                            {{ task.description|markdown_safe }}
                         </div>
                     </div>
                     {% endfor %}
@@ -101,7 +155,9 @@
                     {% for task in schedule %}
                     <div class="bg-white p-4 rounded shadow task-card" draggable="true" data-task-id="{{ task.pk }}" ondragstart="handleDragStart(event)">
                         <h3 class="font-bold">{{ task.title }}</h3>
-                        <p class="text-gray-600">{{ task.description|urlize_custom|safe }}</p>
+                        <button onclick="showDescription('{{ task.pk }}', '{{ task.title|escapejs }}')" class="text-blue-600 hover:text-blue-800 mt-2">
+                            View Description
+                        </button>
                         <div class="mt-2 text-sm">
                             {% if task.due_date %}
                             <p class="text-gray-500 {% if task.due_date|is_due_soon %}due-soon{% endif %}">
@@ -113,16 +169,21 @@
                             </p>
                         </div>
                         <div class="mt-2 space-x-2">
-                            <a href="{% url 'task-update' task.pk %}">Edit</a>
+                            <a href="{% url 'task-view' task.pk %}" class="text-blue-600 hover:text-blue-800">View</a>
+                            <a href="{% url 'task-update' task.pk %}" class="text-blue-600 hover:text-blue-800">Edit</a>
                             <form action="{% url 'task-delete' task.pk %}" method="get" class="inline">
-                                <button type="submit">Delete</button>
+                                <button type="submit" class="text-red-600 hover:text-red-800">Delete</button>
                             </form>
                             <form action="{% url 'task-toggle' task.pk %}" method="post" class="inline">
                                 {% csrf_token %}
-                                <button type="submit">
+                                <button type="submit" class="text-green-600 hover:text-green-800">
                                     {% if task.completed %}Mark Incomplete{% else %}Mark Complete{% endif %}
                                 </button>
                             </form>
+                        </div>
+                        <!-- Hidden description content for modal -->
+                        <div id="description-{{ task.pk }}" class="hidden">
+                            {{ task.description|markdown_safe }}
                         </div>
                     </div>
                     {% endfor %}
@@ -136,7 +197,9 @@
                     {% for task in delegate %}
                     <div class="bg-white p-4 rounded shadow task-card" draggable="true" data-task-id="{{ task.pk }}" ondragstart="handleDragStart(event)">
                         <h3 class="font-bold">{{ task.title }}</h3>
-                        <p class="text-gray-600">{{ task.description|urlize_custom|safe }}</p>
+                        <button onclick="showDescription('{{ task.pk }}', '{{ task.title|escapejs }}')" class="text-blue-600 hover:text-blue-800 mt-2">
+                            View Description
+                        </button>
                         <div class="mt-2 text-sm">
                             {% if task.due_date %}
                             <p class="text-gray-500 {% if task.due_date|is_due_soon %}due-soon{% endif %}">
@@ -148,16 +211,21 @@
                             </p>
                         </div>
                         <div class="mt-2 space-x-2">
-                            <a href="{% url 'task-update' task.pk %}">Edit</a>
+                            <a href="{% url 'task-view' task.pk %}" class="text-blue-600 hover:text-blue-800">View</a>
+                            <a href="{% url 'task-update' task.pk %}" class="text-blue-600 hover:text-blue-800">Edit</a>
                             <form action="{% url 'task-delete' task.pk %}" method="get" class="inline">
-                                <button type="submit">Delete</button>
+                                <button type="submit" class="text-red-600 hover:text-red-800">Delete</button>
                             </form>
                             <form action="{% url 'task-toggle' task.pk %}" method="post" class="inline">
                                 {% csrf_token %}
-                                <button type="submit">
+                                <button type="submit" class="text-green-600 hover:text-green-800">
                                     {% if task.completed %}Mark Incomplete{% else %}Mark Complete{% endif %}
                                 </button>
                             </form>
+                        </div>
+                        <!-- Hidden description content for modal -->
+                        <div id="description-{{ task.pk }}" class="hidden">
+                            {{ task.description|markdown_safe }}
                         </div>
                     </div>
                     {% endfor %}
@@ -171,7 +239,9 @@
                     {% for task in dont_do %}
                     <div class="bg-white p-4 rounded shadow task-card" draggable="true" data-task-id="{{ task.pk }}" ondragstart="handleDragStart(event)">
                         <h3 class="font-bold">{{ task.title }}</h3>
-                        <p class="text-gray-600">{{ task.description|urlize_custom|safe }}</p>
+                        <button onclick="showDescription('{{ task.pk }}', '{{ task.title|escapejs }}')" class="text-blue-600 hover:text-blue-800 mt-2">
+                            View Description
+                        </button>
                         <div class="mt-2 text-sm">
                             {% if task.due_date %}
                             <p class="text-gray-500 {% if task.due_date|is_due_soon %}due-soon{% endif %}">
@@ -183,16 +253,21 @@
                             </p>
                         </div>
                         <div class="mt-2 space-x-2">
-                            <a href="{% url 'task-update' task.pk %}">Edit</a>
+                            <a href="{% url 'task-view' task.pk %}" class="text-blue-600 hover:text-blue-800">View</a>
+                            <a href="{% url 'task-update' task.pk %}" class="text-blue-600 hover:text-blue-800">Edit</a>
                             <form action="{% url 'task-delete' task.pk %}" method="get" class="inline">
-                                <button type="submit">Delete</button>
+                                <button type="submit" class="text-red-600 hover:text-red-800">Delete</button>
                             </form>
                             <form action="{% url 'task-toggle' task.pk %}" method="post" class="inline">
                                 {% csrf_token %}
-                                <button type="submit">
+                                <button type="submit" class="text-green-600 hover:text-green-800">
                                     {% if task.completed %}Mark Incomplete{% else %}Mark Complete{% endif %}
                                 </button>
                             </form>
+                        </div>
+                        <!-- Hidden description content for modal -->
+                        <div id="description-{{ task.pk }}" class="hidden">
+                            {{ task.description|markdown_safe }}
                         </div>
                     </div>
                     {% endfor %}
@@ -207,7 +282,9 @@
                 {% for task in recent_completed %}
                 <div class="bg-white p-4 rounded shadow">
                     <h3 class="font-bold">{{ task.title }}</h3>
-                    <p class="text-gray-600">{{ task.description|urlize_custom|safe }}</p>
+                    <button onclick="showDescription('{{ task.pk }}', '{{ task.title|escapejs }}')" class="text-blue-600 hover:text-blue-800 mt-2">
+                        View Description
+                    </button>
                     <div class="mt-2 text-sm">
                         {% if task.due_date %}
                         <p class="text-gray-500">
@@ -217,16 +294,32 @@
                         <p class="text-gray-500">
                             <span class="font-medium">Created by:</span> {{ task.created_by.username|default:"Unknown" }}
                         </p>
-                        <form action="{% url 'task-toggle' task.pk %}" method="post" class="inline mt-2">
+                    </div>
+                    <div class="mt-2 space-x-2">
+                        <a href="{% url 'task-view' task.pk %}" class="text-blue-600 hover:text-blue-800">View</a>
+                        <form action="{% url 'task-toggle' task.pk %}" method="post" class="inline">
                             {% csrf_token %}
-                            <button type="submit">Mark Incomplete</button>
+                            <button type="submit" class="text-green-600 hover:text-green-800">Mark Incomplete</button>
                         </form>
+                    </div>
+                    <!-- Hidden description content for modal -->
+                    <div id="description-{{ task.pk }}" class="hidden">
+                        {{ task.description|markdown_safe }}
                     </div>
                 </div>
                 {% empty %}
                 <p class="text-gray-600">No completed tasks yet.</p>
                 {% endfor %}
             </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="description-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <h2 id="modal-title" class="text-xl font-bold mb-4"></h2>
+            <div id="modal-content" class="markdown-content"></div>
         </div>
     </div>
 
@@ -279,6 +372,37 @@
             quadrant.addEventListener('dragleave', e => {
                 quadrant.classList.remove('drag-over');
             });
+        });
+
+        // Modal functionality
+        function showDescription(taskId, taskTitle) {
+            const modal = document.getElementById('description-modal');
+            const modalContent = document.getElementById('modal-content');
+            const modalTitle = document.getElementById('modal-title');
+            const description = document.getElementById(`description-${taskId}`).innerHTML;
+            
+            modalTitle.textContent = taskTitle;
+            modalContent.innerHTML = description;
+            modal.style.display = 'block';
+            
+            // Close modal when clicking outside
+            modal.onclick = function(event) {
+                if (event.target === modal) {
+                    closeModal();
+                }
+            };
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('description-modal');
+            modal.style.display = 'none';
+        }
+
+        // Close modal with escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+            }
         });
     </script>
 </body>

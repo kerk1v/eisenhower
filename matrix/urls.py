@@ -6,6 +6,7 @@ urlpatterns = [
     # Matrix views
     path('', views.MatrixView.as_view(), name='matrix'),
     path('task/new/', views.TaskCreate.as_view(), name='task-create'),
+    path('task/<int:pk>/', views.TaskView.as_view(), name='task-view'),
     path('task/<int:pk>/edit/', views.TaskUpdate.as_view(), name='task-update'),
     path('task/<int:pk>/delete/', views.TaskDelete.as_view(), name='task-delete'),
     path('task/<int:pk>/toggle/', views.toggle_task_completion, name='task-toggle'),

@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.contrib.auth.models import User, Group
@@ -27,6 +27,12 @@ class MatrixView(LoginRequiredMixin, ListView):
         context['dont_do'] = tasks.filter(is_urgent=False, is_important=False, completed=False)
         context['recent_completed'] = tasks.filter(completed=True).order_by('-id')[:10]
         return context
+
+class TaskView(LoginRequiredMixin, DetailView):
+    model = Task
+    template_name = 'matrix/task_view.html'
+    context_object_name = 'task'
+    login_url = 'login'
 
 class TaskCreate(LoginRequiredMixin, CreateView):
     model = Task
