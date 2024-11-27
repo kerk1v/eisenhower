@@ -10,3 +10,7 @@ python-dateutil==2.8.2
 pytz==2024.1
 django-markdown-deux==1.0.6
 django-markdownify==0.9.3
+django-tailwind==3.8.0
+django-browser-reload==1.12.1
+django-crispy-forms==2.1
+crispy-tailwind==1.0.0
