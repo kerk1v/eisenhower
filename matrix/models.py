@@ -2,7 +2,52 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
 
+class Matrix(models.Model):
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='owned_matrices'
+    )
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        verbose_name_plural = "matrices"
+        ordering = ['-created_at']
+
+class MatrixAccess(models.Model):
+    matrix = models.ForeignKey(
+        Matrix,
+        on_delete=models.CASCADE,
+        related_name='access_permissions'
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='matrix_accesses'
+    )
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        verbose_name_plural = "matrix accesses"
+        unique_together = ['matrix', 'user']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.matrix.title}"
+
 class Task(models.Model):
+    matrix = models.ForeignKey(
+        Matrix,
+        on_delete=models.CASCADE,
+        related_name='tasks',
+        null=True,  # Temporarily allow null
+        blank=True  # Temporarily allow blank
+    )
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     is_urgent = models.BooleanField(default=False)
@@ -14,9 +59,7 @@ class Task(models.Model):
     created_by = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='tasks',
-        null=True,  # Temporarily allow null
-        default=None
+        related_name='tasks'
     )
 
     def __str__(self):

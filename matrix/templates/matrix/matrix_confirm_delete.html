@@ -1,0 +1,54 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Matrix</title>
+    <link href="{% static 'css/output.css' %}" rel="stylesheet">
+</head>
+<body class="min-h-screen p-4 bg-gray-100">
+    <div class="container mx-auto max-w-2xl">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">Delete Matrix</h1>
+            <div class="flex justify-center space-x-4">
+                <a href="{% url 'matrix-management' %}" class="text-blue-600 hover:text-blue-800">Back to Management</a>
+            </div>
+        </header>
+
+        {% if messages %}
+        <div class="mb-4">
+            {% for message in messages %}
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Confirm Deletion</h2>
+                <p class="text-gray-600 mb-2">Are you sure you want to delete the matrix:</p>
+                <p class="text-xl font-semibold text-red-600">{{ object.title }}</p>
+                {% if object.tasks.count > 0 %}
+                    <p class="text-red-500 mt-4">
+                        Warning: This matrix contains {{ object.tasks.count }} task{{ object.tasks.count|pluralize }}. 
+                        Deleting this matrix will also delete all associated tasks.
+                    </p>
+                {% endif %}
+            </div>
+
+            <form method="post" class="flex justify-center space-x-4">
+                {% csrf_token %}
+                <a href="{% url 'matrix-management' %}" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-md">
+                    Cancel
+                </a>
+                <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-md">
+                    Delete
+                </button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

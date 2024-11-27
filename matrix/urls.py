@@ -12,6 +12,14 @@ urlpatterns = [
     path('task/<int:pk>/toggle/', views.toggle_task_completion, name='task-toggle'),
     path('task/<int:pk>/update-quadrant/', views.update_task_quadrant, name='update-task-quadrant'),
 
+    # Matrix Management
+    path('management/', views.MatrixManagementView.as_view(), name='matrix-management'),
+    path('matrix/create/', views.create_matrix, name='matrix-create'),
+    path('matrix/<int:pk>/edit/', views.MatrixUpdate.as_view(), name='matrix-edit'),
+    path('matrix/<int:pk>/delete/', views.MatrixDelete.as_view(), name='matrix-delete'),
+    path('matrix/<int:matrix_id>/share/', views.share_matrix, name='matrix-share'),
+    path('matrix/<int:matrix_id>/revoke/<int:user_id>/', views.revoke_matrix_access, name='matrix-revoke'),
+
     # User management
     path('users/', views.UserListView.as_view(), name='user-list'),
     path('users/new/', views.UserCreateView.as_view(), name='user-create'),
