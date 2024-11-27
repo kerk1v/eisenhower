@@ -3,6 +3,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Previous head content remains the same until style section -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Eisenhower Matrix</title>
@@ -31,11 +32,47 @@
         .markdown-content pre { @apply bg-gray-100 p-2 rounded mb-2 text-sm; }
         .markdown-content blockquote { @apply border-l-4 border-gray-300 pl-2 italic; }
         .markdown-content a { @apply text-blue-600 hover:text-blue-800 underline; }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+        .modal-content {
+            position: relative;
+            background-color: white;
+            margin: 10vh auto;
+            padding: 1.5rem;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 0.5rem;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .close-modal {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.75rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+        .close-modal:hover {
+            color: #000;
+        }
     </style>
 </head>
 <body class="min-h-screen p-4 bg-gray-100">
+    <!-- Previous body content remains the same until task cards -->
     {% csrf_token %}
     <div class="container mx-auto">
+        <!-- Header section remains the same -->
         <header class="text-center mb-8">
             <div class="flex justify-between items-center mb-4">
                 <div class="flex-1">
@@ -79,7 +116,9 @@
                     {% for task in do_first %}
                     <div class="bg-white p-4 rounded shadow task-card" draggable="true" data-task-id="{{ task.pk }}" ondragstart="handleDragStart(event)">
                         <h3 class="font-bold">{{ task.title }}</h3>
-                        <div class="markdown-content">{{ task.description|markdown_safe }}</div>
+                        <button onclick="showDescription('{{ task.pk }}', '{{ task.title|escapejs }}')" class="text-blue-600 hover:text-blue-800 mt-2">
+                            View Description
+                        </button>
                         <div class="mt-2 text-sm">
                             {% if task.due_date %}
                             <p class="text-gray-500 {% if task.due_date|is_due_soon %}due-soon{% endif %}">
@@ -101,6 +140,10 @@
                                     {% if task.completed %}Mark Incomplete{% else %}Mark Complete{% endif %}
                                 </button>
                             </form>
+                        </div>
+                        <!-- Hidden description content for modal -->
+                        <div id="description-{{ task.pk }}" class="hidden">
+                            {{ task.description|markdown_safe }}
                         </div>
                     </div>
                     {% endfor %}
@@ -114,7 +157,9 @@
                     {% for task in schedule %}
                     <div class="bg-white p-4 rounded shadow task-card" draggable="true" data-task-id="{{ task.pk }}" ondragstart="handleDragStart(event)">
                         <h3 class="font-bold">{{ task.title }}</h3>
-                        <div class="markdown-content">{{ task.description|markdown_safe }}</div>
+                        <button onclick="showDescription('{{ task.pk }}', '{{ task.title|escapejs }}')" class="text-blue-600 hover:text-blue-800 mt-2">
+                            View Description
+                        </button>
                         <div class="mt-2 text-sm">
                             {% if task.due_date %}
                             <p class="text-gray-500 {% if task.due_date|is_due_soon %}due-soon{% endif %}">
@@ -136,6 +181,10 @@
                                     {% if task.completed %}Mark Incomplete{% else %}Mark Complete{% endif %}
                                 </button>
                             </form>
+                        </div>
+                        <!-- Hidden description content for modal -->
+                        <div id="description-{{ task.pk }}" class="hidden">
+                            {{ task.description|markdown_safe }}
                         </div>
                     </div>
                     {% endfor %}
@@ -149,7 +198,9 @@
                     {% for task in delegate %}
                     <div class="bg-white p-4 rounded shadow task-card" draggable="true" data-task-id="{{ task.pk }}" ondragstart="handleDragStart(event)">
                         <h3 class="font-bold">{{ task.title }}</h3>
-                        <div class="markdown-content">{{ task.description|markdown_safe }}</div>
+                        <button onclick="showDescription('{{ task.pk }}', '{{ task.title|escapejs }}')" class="text-blue-600 hover:text-blue-800 mt-2">
+                            View Description
+                        </button>
                         <div class="mt-2 text-sm">
                             {% if task.due_date %}
                             <p class="text-gray-500 {% if task.due_date|is_due_soon %}due-soon{% endif %}">
@@ -171,6 +222,10 @@
                                     {% if task.completed %}Mark Incomplete{% else %}Mark Complete{% endif %}
                                 </button>
                             </form>
+                        </div>
+                        <!-- Hidden description content for modal -->
+                        <div id="description-{{ task.pk }}" class="hidden">
+                            {{ task.description|markdown_safe }}
                         </div>
                     </div>
                     {% endfor %}
@@ -184,7 +239,9 @@
                     {% for task in dont_do %}
                     <div class="bg-white p-4 rounded shadow task-card" draggable="true" data-task-id="{{ task.pk }}" ondragstart="handleDragStart(event)">
                         <h3 class="font-bold">{{ task.title }}</h3>
-                        <div class="markdown-content">{{ task.description|markdown_safe }}</div>
+                        <button onclick="showDescription('{{ task.pk }}', '{{ task.title|escapejs }}')" class="text-blue-600 hover:text-blue-800 mt-2">
+                            View Description
+                        </button>
                         <div class="mt-2 text-sm">
                             {% if task.due_date %}
                             <p class="text-gray-500 {% if task.due_date|is_due_soon %}due-soon{% endif %}">
@@ -206,6 +263,10 @@
                                     {% if task.completed %}Mark Incomplete{% else %}Mark Complete{% endif %}
                                 </button>
                             </form>
+                        </div>
+                        <!-- Hidden description content for modal -->
+                        <div id="description-{{ task.pk }}" class="hidden">
+                            {{ task.description|markdown_safe }}
                         </div>
                     </div>
                     {% endfor %}
@@ -220,7 +281,9 @@
                 {% for task in recent_completed %}
                 <div class="bg-white p-4 rounded shadow">
                     <h3 class="font-bold">{{ task.title }}</h3>
-                    <div class="markdown-content">{{ task.description|markdown_safe }}</div>
+                    <button onclick="showDescription('{{ task.pk }}', '{{ task.title|escapejs }}')" class="text-blue-600 hover:text-blue-800 mt-2">
+                        View Description
+                    </button>
                     <div class="mt-2 text-sm">
                         {% if task.due_date %}
                         <p class="text-gray-500">
@@ -235,11 +298,24 @@
                             <button type="submit" class="text-green-600 hover:text-green-800">Mark Incomplete</button>
                         </form>
                     </div>
+                    <!-- Hidden description content for modal -->
+                    <div id="description-{{ task.pk }}" class="hidden">
+                        {{ task.description|markdown_safe }}
+                    </div>
                 </div>
                 {% empty %}
                 <p class="text-gray-600">No completed tasks yet.</p>
                 {% endfor %}
             </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="description-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <h2 id="modal-title" class="text-xl font-bold mb-4"></h2>
+            <div id="modal-content" class="markdown-content"></div>
         </div>
     </div>
 
@@ -292,6 +368,37 @@
             quadrant.addEventListener('dragleave', e => {
                 quadrant.classList.remove('drag-over');
             });
+        });
+
+        // Modal functionality
+        function showDescription(taskId, taskTitle) {
+            const modal = document.getElementById('description-modal');
+            const modalContent = document.getElementById('modal-content');
+            const modalTitle = document.getElementById('modal-title');
+            const description = document.getElementById(`description-${taskId}`).innerHTML;
+            
+            modalTitle.textContent = taskTitle;
+            modalContent.innerHTML = description;
+            modal.style.display = 'block';
+            
+            // Close modal when clicking outside
+            modal.onclick = function(event) {
+                if (event.target === modal) {
+                    closeModal();
+                }
+            };
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('description-modal');
+            modal.style.display = 'none';
+        }
+
+        // Close modal with escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+            }
         });
     </script>
 </body>
