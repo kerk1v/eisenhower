@@ -2,6 +2,7 @@
 {% load matrix_extras %}
 <!DOCTYPE html>
 <html lang="en">
+<!-- Previous head content remains the same -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -78,12 +79,26 @@
                 <h1 class="text-4xl font-bold text-gray-800 flex-2">Eisenhower Matrix</h1>
                 <div class="flex-1"></div>
             </div>
+            
+            <!-- Matrix Selection -->
+            <div class="mb-4">
+                <select name="matrix" onchange="window.location.href='?matrix=' + this.value" 
+                        class="text-xl font-semibold rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 py-2 px-4">
+                    {% for m in available_matrices %}
+                        <option value="{{ m.id }}" {% if m.id == current_matrix.id %}selected{% endif %}>
+                            {{ m.title }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
             <div class="flex justify-center items-center space-x-4 mt-4">
-                <a href="{% url 'task-create' %}" class="text-blue-600 hover:text-blue-800">Add New Task</a>
+                <a href="{% url 'task-create' %}?matrix={{ current_matrix.id }}" class="text-blue-600 hover:text-blue-800">Add New Task</a>
                 {% if user.is_authenticated %}
                     {% if user.groups.all.0.name == 'admins' %}
                         <a href="{% url 'user-list' %}" class="text-blue-600 hover:text-blue-800">User Management</a>
                     {% endif %}
+                    <a href="{% url 'matrix-management' %}" class="text-blue-600 hover:text-blue-800">Management</a>
                     <a href="{% url 'password-change' %}" class="text-blue-600 hover:text-blue-800">Change Password</a>
                     <form action="{% url 'logout' %}" method="post" class="inline">
                         {% csrf_token %}
@@ -95,6 +110,7 @@
             </div>
         </header>
 
+        <!-- Rest of the template remains the same -->
         {% if messages %}
         <div class="mb-4">
             {% for message in messages %}
