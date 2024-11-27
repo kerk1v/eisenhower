@@ -2,7 +2,6 @@
 {% load matrix_extras %}
 <!DOCTYPE html>
 <html lang="en">
-<!-- Previous head content remains the same -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -32,6 +31,11 @@
         .markdown-content pre { @apply bg-gray-100 p-2 rounded mb-2 text-sm; }
         .markdown-content blockquote { @apply border-l-4 border-gray-300 pl-2 italic; }
         .markdown-content a { @apply text-blue-600 hover:text-blue-800 underline; }
+
+        .action-button {
+            @apply px-2 py-0.5 rounded-md text-[11px] transition-colors duration-150;
+            text-align: center;
+        }
 
         /* Modal styles */
         .modal {
@@ -71,7 +75,8 @@
 <body class="min-h-screen p-4 bg-gray-100">
     {% csrf_token %}
     <div class="container mx-auto">
-        <header class="text-center mb-8">
+        <!-- Header section -->
+        <header class="text-center mb-6">
             <div class="flex justify-between items-center mb-4">
                 <div class="flex-1">
                     <span class="text-gray-600">Welcome, {{ user.username }}</span>
@@ -80,7 +85,6 @@
                 <div class="flex-1"></div>
             </div>
             
-            <!-- Matrix Selection -->
             <div class="mb-4">
                 <select name="matrix" onchange="window.location.href='?matrix=' + this.value" 
                         class="text-xl font-semibold rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 py-2 px-4">
@@ -110,7 +114,6 @@
             </div>
         </header>
 
-        <!-- Rest of the template remains the same -->
         {% if messages %}
         <div class="mb-4">
             {% for message in messages %}
@@ -124,38 +127,39 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
             <!-- Do First Quadrant -->
             <div class="bg-red-100 p-4 rounded-lg quadrant" data-quadrant="do_first" ondragover="event.preventDefault()" ondrop="handleDrop(event)">
-                <h2 class="text-xl font-bold mb-4 text-red-800">Do First (Urgent & Important)</h2>
-                <div class="space-y-2">
+                <h2 class="text-xl font-bold mb-3 text-red-800">Do First (Urgent & Important)</h2>
+                <div class="space-y-1">
                     {% for task in do_first %}
-                    <div class="bg-white p-4 rounded shadow task-card" draggable="true" data-task-id="{{ task.pk }}" ondragstart="handleDragStart(event)">
+                    <div class="bg-white p-3 rounded shadow task-card" draggable="true" data-task-id="{{ task.pk }}" ondragstart="handleDragStart(event)">
                         <h3 class="font-bold">{{ task.title }}</h3>
-                        <button onclick="showDescription('{{ task.pk }}', '{{ task.title|escapejs }}')" class="text-blue-600 hover:text-blue-800 mt-2">
+                        <button onclick="showDescription('{{ task.pk }}', '{{ task.title|escapejs }}')" class="text-blue-600 hover:text-blue-800 text-sm mt-1">
                             View Description
                         </button>
-                        <div class="mt-2 text-sm">
-                            {% if task.due_date %}
-                            <p class="text-gray-500 {% if task.due_date|is_due_soon %}due-soon{% endif %}">
-                                <span class="font-medium">Due:</span> {{ task.due_date|date:"M d, Y H:i" }}
-                            </p>
-                            {% endif %}
-                            <p class="text-gray-500">
-                                <span class="font-medium">Created by:</span> {{ task.created_by.username|default:"Unknown" }}
-                            </p>
+                        <div class="mt-1 text-sm flex justify-between items-start">
+                            <div class="flex items-center space-x-4">
+                                {% if task.due_date %}
+                                <span class="text-gray-500 {% if task.due_date|is_due_soon %}due-soon{% endif %}">
+                                    <span class="font-medium">Due:</span> {{ task.due_date|date:"M d, Y H:i" }}
+                                </span>
+                                <span class="text-gray-500">
+                                    <span class="font-medium">By:</span> {{ task.created_by.username|default:"Unknown" }}
+                                </span>
+                                {% endif %}
+                            </div>
                         </div>
-                        <div class="mt-2 space-x-2">
-                            <a href="{% url 'task-view' task.pk %}" class="text-blue-600 hover:text-blue-800">View</a>
-                            <a href="{% url 'task-update' task.pk %}" class="text-blue-600 hover:text-blue-800">Edit</a>
+                        <div class="mt-2 flex justify-between items-center">
+                            <a href="{% url 'task-view' task.pk %}" class="action-button bg-blue-600 text-white hover:bg-blue-700">View</a>
+                            <a href="{% url 'task-update' task.pk %}" class="action-button bg-blue-600 text-white hover:bg-blue-700">Edit</a>
                             <form action="{% url 'task-delete' task.pk %}" method="get" class="inline">
-                                <button type="submit" class="text-red-600 hover:text-red-800">Delete</button>
+                                <button type="submit" class="action-button bg-red-600 text-white hover:bg-red-700">Delete</button>
                             </form>
                             <form action="{% url 'task-toggle' task.pk %}" method="post" class="inline">
                                 {% csrf_token %}
-                                <button type="submit" class="text-green-600 hover:text-green-800">
-                                    {% if task.completed %}Mark Incomplete{% else %}Mark Complete{% endif %}
+                                <button type="submit" class="action-button bg-blue-600 text-white hover:bg-blue-700">
+                                    {% if task.completed %}Mark Incomplete{% else %}Complete Task{% endif %}
                                 </button>
                             </form>
                         </div>
-                        <!-- Hidden description content for modal -->
                         <div id="description-{{ task.pk }}" class="hidden">
                             {{ task.description|markdown_safe }}
                         </div>
@@ -166,38 +170,39 @@
 
             <!-- Schedule Quadrant -->
             <div class="bg-blue-100 p-4 rounded-lg quadrant" data-quadrant="schedule" ondragover="event.preventDefault()" ondrop="handleDrop(event)">
-                <h2 class="text-xl font-bold mb-4 text-blue-800">Schedule (Important, Not Urgent)</h2>
-                <div class="space-y-2">
+                <h2 class="text-xl font-bold mb-3 text-blue-800">Schedule (Important, Not Urgent)</h2>
+                <div class="space-y-1">
                     {% for task in schedule %}
-                    <div class="bg-white p-4 rounded shadow task-card" draggable="true" data-task-id="{{ task.pk }}" ondragstart="handleDragStart(event)">
+                    <div class="bg-white p-3 rounded shadow task-card" draggable="true" data-task-id="{{ task.pk }}" ondragstart="handleDragStart(event)">
                         <h3 class="font-bold">{{ task.title }}</h3>
-                        <button onclick="showDescription('{{ task.pk }}', '{{ task.title|escapejs }}')" class="text-blue-600 hover:text-blue-800 mt-2">
+                        <button onclick="showDescription('{{ task.pk }}', '{{ task.title|escapejs }}')" class="text-blue-600 hover:text-blue-800 text-sm mt-1">
                             View Description
                         </button>
-                        <div class="mt-2 text-sm">
-                            {% if task.due_date %}
-                            <p class="text-gray-500 {% if task.due_date|is_due_soon %}due-soon{% endif %}">
-                                <span class="font-medium">Due:</span> {{ task.due_date|date:"M d, Y H:i" }}
-                            </p>
-                            {% endif %}
-                            <p class="text-gray-500">
-                                <span class="font-medium">Created by:</span> {{ task.created_by.username|default:"Unknown" }}
-                            </p>
+                        <div class="mt-1 text-sm flex justify-between items-start">
+                            <div class="flex items-center space-x-4">
+                                {% if task.due_date %}
+                                <span class="text-gray-500 {% if task.due_date|is_due_soon %}due-soon{% endif %}">
+                                    <span class="font-medium">Due:</span> {{ task.due_date|date:"M d, Y H:i" }}
+                                </span>
+                                <span class="text-gray-500">
+                                    <span class="font-medium">By:</span> {{ task.created_by.username|default:"Unknown" }}
+                                </span>
+                                {% endif %}
+                            </div>
                         </div>
-                        <div class="mt-2 space-x-2">
-                            <a href="{% url 'task-view' task.pk %}" class="text-blue-600 hover:text-blue-800">View</a>
-                            <a href="{% url 'task-update' task.pk %}" class="text-blue-600 hover:text-blue-800">Edit</a>
+                        <div class="mt-2 flex justify-between items-center">
+                            <a href="{% url 'task-view' task.pk %}" class="action-button bg-blue-600 text-white hover:bg-blue-700">View</a>
+                            <a href="{% url 'task-update' task.pk %}" class="action-button bg-blue-600 text-white hover:bg-blue-700">Edit</a>
                             <form action="{% url 'task-delete' task.pk %}" method="get" class="inline">
-                                <button type="submit" class="text-red-600 hover:text-red-800">Delete</button>
+                                <button type="submit" class="action-button bg-red-600 text-white hover:bg-red-700">Delete</button>
                             </form>
                             <form action="{% url 'task-toggle' task.pk %}" method="post" class="inline">
                                 {% csrf_token %}
-                                <button type="submit" class="text-green-600 hover:text-green-800">
-                                    {% if task.completed %}Mark Incomplete{% else %}Mark Complete{% endif %}
+                                <button type="submit" class="action-button bg-blue-600 text-white hover:bg-blue-700">
+                                    {% if task.completed %}Mark Incomplete{% else %}Complete Task{% endif %}
                                 </button>
                             </form>
                         </div>
-                        <!-- Hidden description content for modal -->
                         <div id="description-{{ task.pk }}" class="hidden">
                             {{ task.description|markdown_safe }}
                         </div>
@@ -208,38 +213,39 @@
 
             <!-- Delegate Quadrant -->
             <div class="bg-yellow-100 p-4 rounded-lg quadrant" data-quadrant="delegate" ondragover="event.preventDefault()" ondrop="handleDrop(event)">
-                <h2 class="text-xl font-bold mb-4 text-yellow-800">Delegate (Urgent, Not Important)</h2>
-                <div class="space-y-2">
+                <h2 class="text-xl font-bold mb-3 text-yellow-800">Delegate (Urgent, Not Important)</h2>
+                <div class="space-y-1">
                     {% for task in delegate %}
-                    <div class="bg-white p-4 rounded shadow task-card" draggable="true" data-task-id="{{ task.pk }}" ondragstart="handleDragStart(event)">
+                    <div class="bg-white p-3 rounded shadow task-card" draggable="true" data-task-id="{{ task.pk }}" ondragstart="handleDragStart(event)">
                         <h3 class="font-bold">{{ task.title }}</h3>
-                        <button onclick="showDescription('{{ task.pk }}', '{{ task.title|escapejs }}')" class="text-blue-600 hover:text-blue-800 mt-2">
+                        <button onclick="showDescription('{{ task.pk }}', '{{ task.title|escapejs }}')" class="text-blue-600 hover:text-blue-800 text-sm mt-1">
                             View Description
                         </button>
-                        <div class="mt-2 text-sm">
-                            {% if task.due_date %}
-                            <p class="text-gray-500 {% if task.due_date|is_due_soon %}due-soon{% endif %}">
-                                <span class="font-medium">Due:</span> {{ task.due_date|date:"M d, Y H:i" }}
-                            </p>
-                            {% endif %}
-                            <p class="text-gray-500">
-                                <span class="font-medium">Created by:</span> {{ task.created_by.username|default:"Unknown" }}
-                            </p>
+                        <div class="mt-1 text-sm flex justify-between items-start">
+                            <div class="flex items-center space-x-4">
+                                {% if task.due_date %}
+                                <span class="text-gray-500 {% if task.due_date|is_due_soon %}due-soon{% endif %}">
+                                    <span class="font-medium">Due:</span> {{ task.due_date|date:"M d, Y H:i" }}
+                                </span>
+                                <span class="text-gray-500">
+                                    <span class="font-medium">By:</span> {{ task.created_by.username|default:"Unknown" }}
+                                </span>
+                                {% endif %}
+                            </div>
                         </div>
-                        <div class="mt-2 space-x-2">
-                            <a href="{% url 'task-view' task.pk %}" class="text-blue-600 hover:text-blue-800">View</a>
-                            <a href="{% url 'task-update' task.pk %}" class="text-blue-600 hover:text-blue-800">Edit</a>
+                        <div class="mt-2 flex justify-between items-center">
+                            <a href="{% url 'task-view' task.pk %}" class="action-button bg-blue-600 text-white hover:bg-blue-700">View</a>
+                            <a href="{% url 'task-update' task.pk %}" class="action-button bg-blue-600 text-white hover:bg-blue-700">Edit</a>
                             <form action="{% url 'task-delete' task.pk %}" method="get" class="inline">
-                                <button type="submit" class="text-red-600 hover:text-red-800">Delete</button>
+                                <button type="submit" class="action-button bg-red-600 text-white hover:bg-red-700">Delete</button>
                             </form>
                             <form action="{% url 'task-toggle' task.pk %}" method="post" class="inline">
                                 {% csrf_token %}
-                                <button type="submit" class="text-green-600 hover:text-green-800">
-                                    {% if task.completed %}Mark Incomplete{% else %}Mark Complete{% endif %}
+                                <button type="submit" class="action-button bg-blue-600 text-white hover:bg-blue-700">
+                                    {% if task.completed %}Mark Incomplete{% else %}Complete Task{% endif %}
                                 </button>
                             </form>
                         </div>
-                        <!-- Hidden description content for modal -->
                         <div id="description-{{ task.pk }}" class="hidden">
                             {{ task.description|markdown_safe }}
                         </div>
@@ -250,38 +256,39 @@
 
             <!-- Don't Do Quadrant -->
             <div class="bg-gray-200 p-4 rounded-lg quadrant" data-quadrant="dont_do" ondragover="event.preventDefault()" ondrop="handleDrop(event)">
-                <h2 class="text-xl font-bold mb-4 text-gray-800">Don't Do (Not Urgent, Not Important)</h2>
-                <div class="space-y-2">
+                <h2 class="text-xl font-bold mb-3 text-gray-800">Don't Do (Not Urgent, Not Important)</h2>
+                <div class="space-y-1">
                     {% for task in dont_do %}
-                    <div class="bg-white p-4 rounded shadow task-card" draggable="true" data-task-id="{{ task.pk }}" ondragstart="handleDragStart(event)">
+                    <div class="bg-white p-3 rounded shadow task-card" draggable="true" data-task-id="{{ task.pk }}" ondragstart="handleDragStart(event)">
                         <h3 class="font-bold">{{ task.title }}</h3>
-                        <button onclick="showDescription('{{ task.pk }}', '{{ task.title|escapejs }}')" class="text-blue-600 hover:text-blue-800 mt-2">
+                        <button onclick="showDescription('{{ task.pk }}', '{{ task.title|escapejs }}')" class="text-blue-600 hover:text-blue-800 text-sm mt-1">
                             View Description
                         </button>
-                        <div class="mt-2 text-sm">
-                            {% if task.due_date %}
-                            <p class="text-gray-500 {% if task.due_date|is_due_soon %}due-soon{% endif %}">
-                                <span class="font-medium">Due:</span> {{ task.due_date|date:"M d, Y H:i" }}
-                            </p>
-                            {% endif %}
-                            <p class="text-gray-500">
-                                <span class="font-medium">Created by:</span> {{ task.created_by.username|default:"Unknown" }}
-                            </p>
+                        <div class="mt-1 text-sm flex justify-between items-start">
+                            <div class="flex items-center space-x-4">
+                                {% if task.due_date %}
+                                <span class="text-gray-500 {% if task.due_date|is_due_soon %}due-soon{% endif %}">
+                                    <span class="font-medium">Due:</span> {{ task.due_date|date:"M d, Y H:i" }}
+                                </span>
+                                <span class="text-gray-500">
+                                    <span class="font-medium">By:</span> {{ task.created_by.username|default:"Unknown" }}
+                                </span>
+                                {% endif %}
+                            </div>
                         </div>
-                        <div class="mt-2 space-x-2">
-                            <a href="{% url 'task-view' task.pk %}" class="text-blue-600 hover:text-blue-800">View</a>
-                            <a href="{% url 'task-update' task.pk %}" class="text-blue-600 hover:text-blue-800">Edit</a>
+                        <div class="mt-2 flex justify-between items-center">
+                            <a href="{% url 'task-view' task.pk %}" class="action-button bg-blue-600 text-white hover:bg-blue-700">View</a>
+                            <a href="{% url 'task-update' task.pk %}" class="action-button bg-blue-600 text-white hover:bg-blue-700">Edit</a>
                             <form action="{% url 'task-delete' task.pk %}" method="get" class="inline">
-                                <button type="submit" class="text-red-600 hover:text-red-800">Delete</button>
+                                <button type="submit" class="action-button bg-red-600 text-white hover:bg-red-700">Delete</button>
                             </form>
                             <form action="{% url 'task-toggle' task.pk %}" method="post" class="inline">
                                 {% csrf_token %}
-                                <button type="submit" class="text-green-600 hover:text-green-800">
-                                    {% if task.completed %}Mark Incomplete{% else %}Mark Complete{% endif %}
+                                <button type="submit" class="action-button bg-blue-600 text-white hover:bg-blue-700">
+                                    {% if task.completed %}Mark Incomplete{% else %}Complete Task{% endif %}
                                 </button>
                             </form>
                         </div>
-                        <!-- Hidden description content for modal -->
                         <div id="description-{{ task.pk }}" class="hidden">
                             {{ task.description|markdown_safe }}
                         </div>
@@ -292,33 +299,34 @@
         </div>
 
         <!-- Recently Completed Tasks -->
-        <div class="bg-green-50 p-4 rounded-lg mt-8">
-            <h2 class="text-xl font-bold mb-4 text-green-800">Recently Completed Tasks</h2>
-            <div class="space-y-2">
+        <div class="bg-green-50 p-4 rounded-lg mt-6">
+            <h2 class="text-xl font-bold mb-3 text-green-800">Recently Completed Tasks</h2>
+            <div class="space-y-1">
                 {% for task in recent_completed %}
-                <div class="bg-white p-4 rounded shadow">
+                <div class="bg-white p-3 rounded shadow">
                     <h3 class="font-bold">{{ task.title }}</h3>
-                    <button onclick="showDescription('{{ task.pk }}', '{{ task.title|escapejs }}')" class="text-blue-600 hover:text-blue-800 mt-2">
+                    <button onclick="showDescription('{{ task.pk }}', '{{ task.title|escapejs }}')" class="text-blue-600 hover:text-blue-800 text-sm mt-1">
                         View Description
                     </button>
-                    <div class="mt-2 text-sm">
-                        {% if task.due_date %}
-                        <p class="text-gray-500">
-                            <span class="font-medium">Due:</span> {{ task.due_date|date:"M d, Y H:i" }}
-                        </p>
-                        {% endif %}
-                        <p class="text-gray-500">
-                            <span class="font-medium">Created by:</span> {{ task.created_by.username|default:"Unknown" }}
-                        </p>
+                    <div class="mt-1 text-sm flex justify-between items-start">
+                        <div class="flex items-center space-x-4">
+                            {% if task.due_date %}
+                            <span class="text-gray-500">
+                                <span class="font-medium">Due:</span> {{ task.due_date|date:"M d, Y H:i" }}
+                            </span>
+                            <span class="text-gray-500">
+                                <span class="font-medium">By:</span> {{ task.created_by.username|default:"Unknown" }}
+                            </span>
+                            {% endif %}
+                        </div>
                     </div>
-                    <div class="mt-2 space-x-2">
-                        <a href="{% url 'task-view' task.pk %}" class="text-blue-600 hover:text-blue-800">View</a>
+                    <div class="mt-2 flex justify-between items-center">
+                        <a href="{% url 'task-view' task.pk %}" class="action-button bg-blue-600 text-white hover:bg-blue-700">View</a>
                         <form action="{% url 'task-toggle' task.pk %}" method="post" class="inline">
                             {% csrf_token %}
-                            <button type="submit" class="text-green-600 hover:text-green-800">Mark Incomplete</button>
+                            <button type="submit" class="action-button bg-blue-600 text-white hover:bg-blue-700">Mark Incomplete</button>
                         </form>
                     </div>
-                    <!-- Hidden description content for modal -->
                     <div id="description-{{ task.pk }}" class="hidden">
                         {{ task.description|markdown_safe }}
                     </div>
@@ -340,7 +348,6 @@
     </div>
 
     <script>
-        // Drag and drop functionality
         let draggedTask = null;
 
         function handleDragStart(event) {
@@ -355,11 +362,9 @@
             const taskId = draggedTask.dataset.taskId;
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-            // Remove dragging class
             draggedTask.classList.remove('dragging');
             event.currentTarget.classList.remove('drag-over');
 
-            // Send AJAX request to update task
             fetch(`/matrix/task/${taskId}/update-quadrant/`, {
                 method: 'POST',
                 headers: {
@@ -371,14 +376,12 @@
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    // Reload the page to reflect changes
                     window.location.reload();
                 }
             })
             .catch(error => console.error('Error:', error));
         }
 
-        // Add drag over effect
         document.querySelectorAll('.quadrant').forEach(quadrant => {
             quadrant.addEventListener('dragenter', e => {
                 e.preventDefault();
@@ -390,7 +393,6 @@
             });
         });
 
-        // Modal functionality
         function showDescription(taskId, taskTitle) {
             const modal = document.getElementById('description-modal');
             const modalContent = document.getElementById('modal-content');
@@ -401,7 +403,6 @@
             modalContent.innerHTML = description;
             modal.style.display = 'block';
             
-            // Close modal when clicking outside
             modal.onclick = function(event) {
                 if (event.target === modal) {
                     closeModal();
@@ -414,7 +415,6 @@
             modal.style.display = 'none';
         }
 
-        // Close modal with escape key
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape') {
                 closeModal();
