@@ -1,53 +1,11 @@
----
-{
-  "apiVersion": "v1",
-  "kind": "PersistentVolumeClaim",
-  "metadata": {
-    "annotations": {
-      "kustomize.toolkit.fluxcd.io/prune": "disabled",
-      "pv.kubernetes.io/bind-completed": "yes"
-    },
-    "finalizers": [
-      "kubernetes.io/pvc-protection"
-    ],
-    "labels": {
-      "kustomize.toolkit.fluxcd.io/name": "cutover-storage",
-      "kustomize.toolkit.fluxcd.io/namespace": "flux-system"
-    },
-    "name": "v-604a7075c5316cde",
-    "namespace": "eisenhower"
-  },
-  "spec": {
-    "accessModes": [
-      "ReadWriteOnce"
-    ],
-    "resources": {
-      "requests": {
-        "storage": "1Gi"
-      }
-    },
-    "storageClassName": "",
-    "volumeMode": "Filesystem",
-    "volumeName": "eisenhower-v-604a7075c5316cde"
-  }
-}
-
----
 {
   "apiVersion": "v1",
   "kind": "PersistentVolume",
   "metadata": {
+    "name": "eisenhower-v-604a7075c5316cde",
     "annotations": {
-      "kustomize.toolkit.fluxcd.io/prune": "disabled"
-    },
-    "finalizers": [
-      "kubernetes.io/pv-protection"
-    ],
-    "labels": {
-      "kustomize.toolkit.fluxcd.io/name": "cutover-storage",
-      "kustomize.toolkit.fluxcd.io/namespace": "flux-system"
-    },
-    "name": "eisenhower-v-604a7075c5316cde"
+      "pv.kubernetes.io/bound-by-controller": "yes"
+    }
   },
   "spec": {
     "accessModes": [
@@ -61,8 +19,7 @@
       "kind": "PersistentVolumeClaim",
       "name": "v-604a7075c5316cde",
       "namespace": "eisenhower",
-      "resourceVersion": "1119",
-      "uid": "29131bd6-85d7-47f2-a142-868799f4ce0d"
+      "uid": "a355de5c-9302-42fb-aebc-27f6c1957873"
     },
     "local": {
       "path": "/opt/stacks/eisenhower/data"
@@ -86,5 +43,30 @@
     },
     "persistentVolumeReclaimPolicy": "Retain",
     "volumeMode": "Filesystem"
+  }
+}
+---
+{
+  "apiVersion": "v1",
+  "kind": "PersistentVolumeClaim",
+  "metadata": {
+    "name": "v-604a7075c5316cde",
+    "namespace": "eisenhower",
+    "annotations": {
+      "pv.kubernetes.io/bind-completed": "yes"
+    }
+  },
+  "spec": {
+    "accessModes": [
+      "ReadWriteOnce"
+    ],
+    "resources": {
+      "requests": {
+        "storage": "1Gi"
+      }
+    },
+    "storageClassName": "",
+    "volumeMode": "Filesystem",
+    "volumeName": "eisenhower-v-604a7075c5316cde"
   }
 }
