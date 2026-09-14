@@ -1,0 +1,5 @@
+defaultNamespace: eisenhower
+kustomize:
+  dir: .
+helm:
+  takeOwnership: true

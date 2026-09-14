@@ -1,0 +1,196 @@
+---
+{
+  "apiVersion": "apps/v1",
+  "kind": "Deployment",
+  "metadata": {
+    "annotations": {
+      "deployment.kubernetes.io/revision": "1"
+    },
+    "name": "web",
+    "namespace": "eisenhower"
+  },
+  "spec": {
+    "progressDeadlineSeconds": 600,
+    "replicas": 1,
+    "revisionHistoryLimit": 10,
+    "selector": {
+      "matchLabels": {
+        "app.kubernetes.io/name": "web"
+      }
+    },
+    "strategy": {
+      "type": "Recreate"
+    },
+    "template": {
+      "metadata": {
+        "labels": {
+          "app.kubernetes.io/name": "web"
+        }
+      },
+      "spec": {
+        "automountServiceAccountToken": false,
+        "containers": [
+          {
+            "command": [
+              "/app/entrypoint.sh"
+            ],
+            "envFrom": [
+              {
+                "secretRef": {
+                  "name": "web-env"
+                }
+              }
+            ],
+            "image": "ghcr.io/kerk1v/eisenhower@sha256:6197a202c28c81590909cf28a70cf4419ceea8d3bd423623442927341e163bc4",
+            "imagePullPolicy": "IfNotPresent",
+            "name": "web",
+            "ports": [
+              {
+                "containerPort": 8000,
+                "name": "p8000-tcp",
+                "protocol": "TCP"
+              }
+            ],
+            "readinessProbe": {
+              "failureThreshold": 3,
+              "periodSeconds": 10,
+              "successThreshold": 1,
+              "tcpSocket": {
+                "port": 8000
+              },
+              "timeoutSeconds": 1
+            },
+            "resources": {
+              "requests": {
+                "cpu": "25m",
+                "memory": "64Mi"
+              }
+            },
+            "startupProbe": {
+              "failureThreshold": 180,
+              "periodSeconds": 10,
+              "successThreshold": 1,
+              "tcpSocket": {
+                "port": 8000
+              },
+              "timeoutSeconds": 1
+            },
+            "terminationMessagePath": "/dev/termination-log",
+            "terminationMessagePolicy": "File",
+            "volumeMounts": [
+              {
+                "mountPath": "/data",
+                "name": "v-604a7075c5316cde"
+              },
+              {
+                "mountPath": "/dev/shm",
+                "name": "shm"
+              }
+            ],
+            "workingDir": "/app"
+          }
+        ],
+        "dnsPolicy": "ClusterFirst",
+        "imagePullSecrets": [
+          {
+            "name": "registry-credentials"
+          }
+        ],
+        "nodeSelector": {
+          "kubernetes.io/hostname": "spainip-k3s"
+        },
+        "restartPolicy": "Always",
+        "schedulerName": "default-scheduler",
+        "securityContext": {},
+        "terminationGracePeriodSeconds": 120,
+        "volumes": [
+          {
+            "name": "v-604a7075c5316cde",
+            "persistentVolumeClaim": {
+              "claimName": "v-604a7075c5316cde"
+            }
+          },
+          {
+            "emptyDir": {
+              "medium": "Memory",
+              "sizeLimit": "67108864"
+            },
+            "name": "shm"
+          }
+        ]
+      }
+    }
+  }
+}
+
+---
+{
+  "apiVersion": "v1",
+  "kind": "Service",
+  "metadata": {
+    "labels": {
+      "kustomize.toolkit.fluxcd.io/name": "eisenhower-web",
+      "kustomize.toolkit.fluxcd.io/namespace": "flux-system"
+    },
+    "name": "web",
+    "namespace": "eisenhower"
+  },
+  "spec": {
+    "clusterIP": "10.43.189.245",
+    "clusterIPs": [
+      "10.43.189.245"
+    ],
+    "internalTrafficPolicy": "Cluster",
+    "ipFamilies": [
+      "IPv4"
+    ],
+    "ipFamilyPolicy": "SingleStack",
+    "ports": [
+      {
+        "name": "p8000-tcp",
+        "port": 8000,
+        "protocol": "TCP",
+        "targetPort": 8000
+      }
+    ],
+    "selector": {
+      "app.kubernetes.io/name": "web"
+    },
+    "sessionAffinity": "None",
+    "type": "ClusterIP"
+  }
+}
+
+---
+{
+  "apiVersion": "traefik.io/v1alpha1",
+  "kind": "IngressRoute",
+  "metadata": {
+    "labels": {
+      "kustomize.toolkit.fluxcd.io/name": "eisenhower-web",
+      "kustomize.toolkit.fluxcd.io/namespace": "flux-system"
+    },
+    "name": "web-eisenhower",
+    "namespace": "eisenhower"
+  },
+  "spec": {
+    "entryPoints": [
+      "websecure"
+    ],
+    "routes": [
+      {
+        "kind": "Rule",
+        "match": "Host(`eisenhower.spainip.es`)",
+        "services": [
+          {
+            "name": "web",
+            "port": 8000
+          }
+        ]
+      }
+    ],
+    "tls": {
+      "certResolver": "acmeresolver"
+    }
+  }
+}
