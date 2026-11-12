@@ -3,12 +3,3 @@ kustomize:
   dir: .
 helm:
   takeOwnership: true
-diff:
-  comparePatches:
-  - apiVersion: v1
-    kind: PersistentVolumeClaim
-    name: v-604a7075c5316cde
-    namespace: eisenhower
-    operations:
-    - op: remove
-      path: /spec/volumeName

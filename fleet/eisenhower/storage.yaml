@@ -15,6 +15,7 @@
       }
     },
     "storageClassName": "retained-local-path",
-    "volumeMode": "Filesystem"
+    "volumeMode": "Filesystem",
+    "volumeName": "pvc-67e369ed-e019-40e0-b45a-2a865f363098"
   }
 }
